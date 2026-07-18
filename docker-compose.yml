@@ -1,0 +1,13 @@
+services:
+  session-forge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: session-forge
+    environment:
+      HOST: 0.0.0.0
+      PORT: 1455
+      NODE_ENV: production
+    ports:
+      - "1455:1455"
+    restart: unless-stopped

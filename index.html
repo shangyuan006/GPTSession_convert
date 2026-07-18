@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Session Forge · 会话转换工具</title>
+  <meta name="description" content="在本地完成 ChatGPT Session、CPA 与 Sub2API 格式转换。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #12233b;
+      --ink-soft: #58677b;
+      --paper: #f7f9fc;
+      --panel: #ffffff;
+      --line: #e4eaf2;
+      --accent: #2c67f2;
+      --accent-soft: #edf3ff;
+      --mint: #19a985;
+      --mint-soft: #e8f8f3;
+      --warn: #d8882d;
+      --danger: #c95b63;
+      --shadow: 0 18px 48px rgba(25, 47, 79, .08);
+      --mono: 'DM Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+      --sans: 'Manrope', 'Segoe UI', sans-serif;
+    }
+    body.dark {
+      --ink: #edf4ff;
+      --ink-soft: #a5b5c9;
+      --paper: #0c1728;
+      --panel: #122238;
+      --line: #263a53;
+      --accent-soft: #1a3566;
+      --mint-soft: #153d38;
+      --shadow: 0 18px 48px rgba(0, 0, 0, .22);
+    }
+    body.dark .sidebar, body.dark .topbar { background: rgba(13, 28, 47, .88); }
+    body.dark .panel, body.dark .option, body.dark .icon-btn, body.dark .secondary, body.dark .arrow { background: var(--panel); }
+    body.dark .output-box { background: #091321; }
+    body.dark .nav button:hover { background: #182b45; }
+    body.dark .drop-hint, body.dark textarea::placeholder { color: #768aa4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 238px 1fr; }
+    .sidebar { border-right: 1px solid var(--line); background: rgba(255,255,255,.82); padding: 28px 17px 22px; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 11px 30px; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--ink); color: #fff; font-weight: 800; letter-spacing: -1px; }
+    .brand-title { font-weight: 800; letter-spacing: -.4px; }
+    .brand-sub { color: var(--ink-soft); font-size: 11px; margin-top: 2px; }
+    .nav-label { color: #9ba7b6; font: 500 10px var(--mono); letter-spacing: .8px; text-transform: uppercase; padding: 0 12px 9px; }
+    .nav { display: grid; gap: 5px; }
+    .nav button { border: 0; width: 100%; background: transparent; color: var(--ink-soft); text-align: left; padding: 11px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .nav button:hover { background: #f3f6fa; color: var(--ink); }
+    .nav button.active { color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+    .nav-icon { width: 17px; height: 17px; display: grid; place-items: center; font-size: 15px; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid var(--line); padding: 18px 11px 0; color: var(--ink-soft); font-size: 11px; line-height: 1.55; }
+    .privacy { display: flex; gap: 7px; align-items: flex-start; }
+    .privacy-dot { width: 7px; height: 7px; margin-top: 4px; border-radius: 50%; background: var(--mint); flex: 0 0 auto; }
+    main { min-width: 0; }
+    .topbar { height: 74px; border-bottom: 1px solid var(--line); padding: 0 42px; display: flex; align-items: center; justify-content: space-between; background: rgba(247,249,252,.72); }
+    .crumb { display: flex; align-items: center; gap: 9px; color: var(--ink-soft); font-size: 12px; }
+    .crumb strong { color: var(--ink); font-weight: 700; }
+    .top-actions { display: flex; align-items: center; gap: 14px; }
+    .online { display: flex; align-items: center; gap: 7px; font: 500 11px var(--mono); color: var(--mint); }
+    .online i { display: block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px var(--mint-soft); }
+    .icon-btn { width: 34px; height: 34px; border: 1px solid var(--line); background: #fff; border-radius: 8px; color: var(--ink-soft); display: grid; place-items: center; }
+    .icon-btn:hover { border-color: #c9d5e5; color: var(--ink); }
+    .content { max-width: 1340px; margin: 0 auto; padding: 45px 42px 64px; }
+    .heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin-bottom: 34px; }
+    .eyebrow { color: var(--accent); font: 500 10px var(--mono); letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 12px; }
+    h1 { font-size: clamp(28px, 3vw, 40px); line-height: 1.1; letter-spacing: -1.3px; margin: 0 0 11px; }
+    .intro { max-width: 560px; color: var(--ink-soft); font-size: 14px; line-height: 1.7; margin: 0; }
+    .heading-note { border-left: 2px solid var(--accent); padding: 7px 0 7px 14px; max-width: 235px; color: var(--ink-soft); font-size: 12px; line-height: 1.6; }
+    .mode-tabs { display: flex; overflow-x: auto; border-bottom: 1px solid var(--line); margin-bottom: 22px; gap: 6px; scrollbar-width: thin; }
+    .mode-tab { flex: 0 0 auto; white-space: nowrap; border: 0; background: transparent; color: var(--ink-soft); padding: 12px 16px 13px; position: relative; font-size: 13px; }
+    .mode-tab.active { color: var(--ink); font-weight: 700; }
+    .mode-tab.active::after { content: ''; position: absolute; height: 2px; left: 11px; right: 11px; bottom: -1px; background: var(--accent); }
+    .route-controls { display: grid; grid-template-columns: minmax(0,1fr) 36px minmax(0,1fr); gap: 12px; align-items: end; margin: -5px 0 22px; }
+    .route-field { display: grid; gap: 7px; }
+    .route-field label { color: var(--ink-soft); font: 500 10px var(--mono); letter-spacing: .6px; text-transform: uppercase; }
+    .route-field select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); padding: 10px 11px; outline: 0; font-size: 12px; }
+    .route-field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .route-arrow { display: grid; place-items: center; color: var(--accent); font-size: 18px; padding-bottom: 8px; }
+    .workflow { display: grid; grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr); align-items: stretch; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); min-width: 0; }
+    .panel-head { padding: 18px 20px 15px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+    .panel-title { font-weight: 700; font-size: 13px; }
+    .panel-meta { color: #9aa7b6; font: 500 10px var(--mono); }
+    .panel-body { padding: 18px 20px 20px; }
+    .input-zone { border: 1px dashed #c5d2e3; border-radius: 8px; min-height: 289px; padding: 15px; display: flex; flex-direction: column; position: relative; transition: .2s; }
+    .input-zone.drag { border-color: var(--accent); background: var(--accent-soft); }
+    textarea { resize: none; border: 0; outline: 0; width: 100%; flex: 1; color: var(--ink); line-height: 1.65; background: transparent; font: 12px var(--mono); }
+    textarea::placeholder { color: #aab5c2; }
+    .drop-hint { display: flex; align-items: center; gap: 9px; color: #99a7b8; font-size: 11px; padding-top: 12px; }
+    .drop-hint span { color: var(--accent); font-size: 15px; }
+    .panel-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 13px; }
+    .import-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .utility { border: 0; background: transparent; padding: 5px 0; color: var(--ink-soft); font-size: 11px; }
+    .utility:hover { color: var(--accent); }
+    .primary { border: 0; background: var(--accent); color: #fff; border-radius: 7px; padding: 10px 16px; font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(44,103,242,.2); }
+    .primary:hover { background: #1f56d7; }
+    .secondary { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 7px; padding: 9px 13px; font-size: 12px; font-weight: 600; }
+    .secondary:hover { border-color: #b7c6da; }
+    .arrow-col { display: grid; place-items: center; color: #a8b5c4; }
+    .arrow { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 16px; }
+    .output-box { min-height: 289px; border-radius: 8px; background: #101f34; color: #d9e6f7; overflow: auto; padding: 16px; font: 11px/1.7 var(--mono); white-space: pre-wrap; word-break: break-word; }
+    .output-empty { height: 254px; display: grid; place-content: center; text-align: center; color: #71839b; font-family: var(--sans); font-size: 12px; }
+    .output-empty strong { color: #a3b4ca; font-weight: 600; display: block; margin-bottom: 5px; }
+    .stats { display: flex; gap: 22px; margin-top: 15px; color: var(--ink-soft); font: 10px var(--mono); }
+    .stats b { color: var(--ink); font-weight: 500; }
+    .result-actions { display: flex; gap: 8px; align-items: center; }
+    .result-actions .secondary { padding: 7px 9px; font-size: 11px; }
+    .options { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .option { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 16px; display: flex; gap: 11px; align-items: flex-start; }
+    .option input { accent-color: var(--accent); margin-top: 3px; }
+    .option-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+    .option-copy { color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+    .history { margin-top: 34px; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 13px; }
+    .section-title { font-size: 14px; font-weight: 800; letter-spacing: -.2px; }
+    .section-link { color: var(--accent); border: 0; background: transparent; font-size: 11px; }
+    .history-list { border-top: 1px solid var(--line); }
+    .history-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 20px; align-items: center; padding: 15px 4px; border-bottom: 1px solid var(--line); font-size: 11px; }
+    .history-main { display: flex; align-items: center; gap: 10px; }
+    .file-icon { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font: 11px var(--mono); }
+    .history-name { font-weight: 700; }
+    .history-detail { color: var(--ink-soft); font-size: 10px; margin-top: 3px; }
+    .history-mode, .history-time { color: var(--ink-soft); }
+    .status { color: var(--mint); display: flex; align-items: center; gap: 6px; }
+    .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .toast { position: fixed; right: 24px; bottom: 24px; background: var(--ink); color: #fff; padding: 11px 15px; border-radius: 7px; font-size: 12px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .22s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .oauth-panel { margin-top: 4px; }
+    .oauth-panel[hidden] { display: none; }
+    .oauth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { display: grid; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: var(--ink-soft); font: 500 10px var(--mono); letter-spacing: .5px; text-transform: uppercase; }
+    .field input, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); padding: 10px 11px; outline: 0; font-size: 12px; }
+    .field textarea { min-height: 92px; resize: vertical; font-family: var(--mono); }
+    .field input:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .oauth-actions { display:flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; }
+    .oauth-note { color: var(--ink-soft); font-size: 11px; line-height: 1.55; }
+    .oauth-output { margin-top: 18px; }
+    .oauth-output pre { margin: 0; min-height: 120px; white-space: pre-wrap; word-break: break-word; background: #101f34; color: #d9e6f7; border-radius: 8px; padding: 14px; font: 11px/1.6 var(--mono); }
+    body.dark .field input, body.dark .field textarea { background: #0d1c30; }
+    body.dark .oauth-output pre { background: #091321; }
+    @media (max-width: 930px) { .app { grid-template-columns: 70px 1fr; } .sidebar { padding: 20px 10px; } .brand { padding: 0 8px 28px; } .brand-copy, .nav-label, .nav button span, .sidebar-footer { display: none; } .nav button { justify-content: center; padding: 12px 0; } .topbar { padding: 0 24px; } .content { padding: 34px 24px 50px; } }
+    @media (max-width: 700px) { .heading { display: block; } .heading-note { margin-top: 18px; max-width: none; } .workflow { grid-template-columns: 1fr; gap: 10px; } .arrow-col { transform: rotate(90deg); height: 28px; } .options { grid-template-columns: 1fr; } .history-row { grid-template-columns: 1fr auto; gap: 8px; } .history-mode, .history-time { display: none; } h1 { font-size: 30px; } }
+    @media (max-width: 560px) { .route-controls { grid-template-columns: 1fr; gap: 7px; } .route-arrow { transform: rotate(90deg); padding: 0; height: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">SF</div><div class="brand-copy"><div class="brand-title">Session Forge</div><div class="brand-sub">本地转换工作台</div></div></div>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav">
+        <button class="active" data-nav="convert"><span class="nav-icon">⇄</span><span>Session 转换</span></button>
+        <button data-nav="validate"><span class="nav-icon">✓</span><span>格式校验</span></button>
+        <button data-nav="history"><span class="nav-icon">◷</span><span>转换记录</span></button>
+        <button data-nav="oauth"><span class="nav-icon">↗</span><span>OAuth Token</span></button>
+      </nav>
+      <div class="sidebar-footer"><div class="privacy"><i class="privacy-dot"></i><span>所有内容仅在浏览器本地处理<br>不会上传任何 session 数据</span></div></div>
+    </aside>
+    <main>
+      <header class="topbar"><div></div><div class="top-actions"><div class="online"><i></i> LOCAL READY</div><button class="icon-btn" id="themeBtn" title="切换显示模式" aria-label="切换显示模式">☼</button></div></header>
+      <div class="content">
+        <section class="heading"><div><div class="eyebrow">SESSION TOOLKIT · 01</div><h1>把复杂的会话格式，<br>变成清晰可用的配置。</h1><p class="intro">覆盖 GPT Session、CPA、Sub2API、Codex-Manager、AxonHub、9router 与 Cockpit。支持双向转换、批量 JSON，以及 OAuth 授权码兑换。</p></div><div class="heading-note">本地解析 · 无服务器中转<br>适合临时调试与批量整理</div></section>
+        <div class="mode-tabs" role="tablist"><button class="mode-tab active" data-mode="session">GPT Session</button><button class="mode-tab" data-mode="cpa">CPA</button><button class="mode-tab" data-mode="sub2cpa">Sub2API</button><button class="mode-tab" data-mode="codex">Codex-Manager</button><button class="mode-tab" data-mode="axonhub">AxonHub</button><button class="mode-tab" data-mode="router9">9router</button><button class="mode-tab" data-mode="cockpit">Cockpit</button></div>
+        <div class="route-controls"><div class="route-field"><label for="sourceFormat">源格式</label><select id="sourceFormat"><option value="session">GPT Session</option><option value="cpa">CPA</option><option value="sub2api">Sub2API</option><option value="codex">Codex-Manager</option><option value="axonhub">AxonHub</option><option value="router9">9router</option><option value="cockpit">Cockpit</option></select></div><div class="route-arrow">→</div><div class="route-field"><label for="targetFormat">目标格式</label><select id="targetFormat"><option value="cpa">CPA</option><option value="sub2api">Sub2API</option><option value="codex">Codex-Manager</option><option value="axonhub">AxonHub</option><option value="router9">9router</option><option value="cockpit">Cockpit</option></select></div></div>
+        <section class="workflow" id="convertView">
+          <article class="panel"><div class="panel-head"><div class="panel-title" id="inputTitle">粘贴 Session 内容</div><div class="panel-meta" id="inputMeta">INPUT / SESSION</div></div><div class="panel-body"><div class="input-zone" id="dropZone"><textarea id="inputText" spellcheck="false" placeholder="将 session token、JSON 或文件内容粘贴到这里…"></textarea><div class="drop-hint"><span>＋</span> 可拖拽一个或多个 JSON 文件到此处</div></div><div class="panel-controls"><button class="utility" id="clearBtn">清空输入</button><div class="import-actions"><button class="secondary" id="fileBtn">选择 JSON</button><button class="secondary" id="folderBtn">选择目录</button><button class="secondary" id="sampleBtn">载入示例</button><button class="primary" id="convertBtn">开始转换&nbsp; →</button></div></div><input id="fileInput" type="file" accept="application/json,.json" multiple hidden><input id="folderInput" type="file" accept="application/json,.json" webkitdirectory directory multiple hidden></div></article>
+          <div class="arrow-col"><div class="arrow">→</div></div>
+          <article class="panel"><div class="panel-head"><div class="panel-title" id="outputTitle">标准 JSON 配置</div><div class="result-actions"><button class="secondary" id="copyBtn">复制</button><button class="secondary" id="downloadBtn">下载</button></div></div><div class="panel-body"><div class="output-box" id="outputBox"><div class="output-empty"><strong>等待转换</strong>结果会显示在这里</div></div><div class="stats"><span>LINES <b id="lineCount">—</b></span><span>BYTES <b id="byteCount">—</b></span><span>STATUS <b id="statusText">IDLE</b></span></div></div></article>
+        </section>
+        <section class="panel oauth-panel" id="oauthView"><div class="panel-head"><div><div class="panel-title">OAuth · 获取 refresh_token</div><div class="panel-meta">OPENAI LOGIN + PKCE CALLBACK</div></div><div class="result-actions"><button class="secondary" id="oauthCopyBtn">复制结果</button></div></div><div class="panel-body"><div class="oauth-grid"><div class="field full"><label for="oauthLink">生成的 OAuth URL</label><textarea id="oauthLink" readonly placeholder="点击“生成登录链接”后显示"></textarea></div><div class="field full"><label for="oauthCode">回调 URL / OAuth Code</label><textarea id="oauthCode" placeholder="回调会自动填入，也可以粘贴完整回调 URL 或 code"></textarea></div></div><div class="oauth-actions"><div class="import-actions"><button class="secondary" id="oauthUrlBtn">生成登录链接</button><button class="secondary" id="oauthOpenBtn">打开登录页</button><button class="primary" id="oauthExchangeBtn">生成（含 refresh_token）</button></div></div><div class="oauth-output"><pre id="oauthOutput">等待生成 OAuth 登录链接</pre></div></div></section>
+        <section class="options"><label class="option"><input type="checkbox" id="prettyCheck" checked><span><div class="option-title">美化 JSON</div><div class="option-copy">缩进 2 个空格，便于阅读与二次编辑</div></span></label><label class="option"><input type="checkbox" id="normalizeCheck" checked><span><div class="option-title">自动补全字段</div><div class="option-copy">统一 token、账号与过期时间字段</div></span></label><label class="option"><input type="checkbox" id="stripCheck"><span><div class="option-title">移除空值</div><div class="option-copy">导出前清理 null 与空字符串</div></span></label></section>
+        <section class="history"><div class="section-head"><div class="section-title">最近转换</div><button class="section-link" id="clearHistoryBtn">清除记录</button></div><div class="history-list" id="historyList"><div class="history-row"><div class="history-main"><div class="file-icon">JS</div><div><div class="history-name">等待第一次转换</div><div class="history-detail">本地记录会出现在这里</div></div></div><div class="history-mode">—</div><div class="history-time">—</div><div class="status">READY</div></div></div></section>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const samples = {
+      session: '{\n  "accessToken": "eyJhbGciOi...demo-token",\n  "email": "demo@example.com",\n  "userId": "user_demo_01",\n  "expiresAt": 1767225600\n}',
+      cpa: '{\n  "api_key": "sk-demo-session-key",\n  "model": "gpt-4o-mini",\n  "base_url": "https://api.openai.com/v1",\n  "note": "demo account"\n}',
+      sub2cpa: '{\n  "exported_at": "2026-07-18T08:00:00.000Z",\n  "proxies": [],\n  "accounts": [{\n    "name": "demo-account",\n    "platform": "codex",\n    "type": "oauth",\n    "concurrency": 10,\n    "priority": 1,\n    "credentials": {\n      "access_token": "eyJhbGciOi...demo-access",\n      "id_token": "eyJhbGciOi...demo-id",\n      "refresh_token": "demo-refresh-token",\n      "email": "demo@example.com"\n    },\n    "extra": { "email": "demo@example.com" }\n  }]\n}',
+      codex: '{\n  "id": "codex-demo",\n  "access_token": "sk-codex-demo",\n  "email": "demo@example.com",\n  "base_url": "https://api.openai.com/v1"\n}',
+      axonhub: '{\n  "name": "axon-demo",\n  "token": "sk-axon-demo",\n  "endpoint": "https://api.openai.com/v1",\n  "model": "gpt-4o"\n}',
+      router9: '{\n  "key": "sk-router-demo",\n  "url": "https://9router.com/v1",\n  "model": "gpt-4o-mini"\n}',
+      cockpit: '{\n  "provider": "openai",\n  "apiKey": "sk-cockpit-demo",\n  "baseURL": "https://api.openai.com/v1",\n  "defaultModel": "gpt-4o"\n}',
+    };
+    const state = { mode: 'session', result: null, history: [] };
+    const $ = id => document.getElementById(id);
+    const modeLabels = { session: ['粘贴 Session 内容','INPUT / SESSION','CPA 配置'], cpa: ['粘贴 CPA 配置','INPUT / CPA','Sub2API 配置'], sub2cpa: ['粘贴 Sub2API 配置','INPUT / SUB2API','CPA 配置'], codex: ['粘贴 Codex-Manager 配置','INPUT / CODEX-MANAGER','CPA 配置'], axonhub: ['粘贴 AxonHub 配置','INPUT / AXONHUB','CPA 配置'], router9: ['粘贴 9router 配置','INPUT / 9ROUTER','CPA 配置'], cockpit: ['粘贴 Cockpit 配置','INPUT / COCKPIT','CPA 配置'] };
+    function showToast(message) { const t = $('toast'); t.textContent = message; t.classList.add('show'); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => t.classList.remove('show'), 2200); }
+    function setMode(mode) { state.mode = mode; document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode)); const l = modeLabels[mode]; $('inputTitle').textContent = l[0]; $('inputMeta').textContent = l[1]; $('outputTitle').textContent = l[2]; $('inputText').value = ''; $('outputBox').innerHTML = '<div class="output-empty"><strong>等待转换</strong>结果会显示在这里</div>'; $('lineCount').textContent = '—'; $('byteCount').textContent = '—'; $('statusText').textContent = 'IDLE'; }
+    function parseInput(raw) { const text = raw.trim(); if (!text) throw new Error('请输入内容后再转换'); try { return JSON.parse(text); } catch (_) {} if (text.includes('=') && !text.includes('{')) { const out = {}; text.split(/[\n,;]+/).forEach(pair => { const i = pair.indexOf('='); if (i > 0) out[pair.slice(0,i).trim()] = pair.slice(i+1).trim(); }); if (Object.keys(out).length) return out; } return { token: text }; }
+    function clean(obj) { if (Array.isArray(obj)) return obj.map(clean); if (!obj || typeof obj !== 'object') return obj; const out = {}; Object.entries(obj).forEach(([k,v]) => { const nv = clean(v); if (!$('stripCheck').checked || (nv !== null && nv !== '')) out[k] = nv; }); return out; }
+    function first(obj, keys, fallback = '') { for (const key of keys) { const parts = key.split('.'); let value = obj; for (const part of parts) value = value && value[part]; if (value !== undefined && value !== null && value !== '') return value; } return fallback; }
+    function toCpa(account, source) { const credentials = account.credentials || {}; const extra = account.extra || {}; const platform = String(account.platform || source || 'codex').toLowerCase(); const isCodex = platform === 'openai' || platform === 'codex'; return clean({ type: isCodex ? 'codex' : platform, access_token: first(credentials, ['access_token','accessToken','token']), id_token: first(credentials, ['id_token','idToken']), account_id: first(credentials, ['chatgpt_account_id','account_id']), email: first(extra, ['email']) || first(credentials, ['email','email_address']), expired: first(credentials, ['expires_at','expiry']), last_refresh: first(extra, ['last_refresh']), plan_type: first(credentials, ['plan_type']), project_id: first(credentials, ['project_id']), refresh_token: first(credentials, ['refresh_token','refreshToken'], '') }); }
+    function toSub2Api(record) { const platform = String(first(record, ['type','platform'], 'codex')).toLowerCase(); const normalizedPlatform = platform === 'openai' ? 'codex' : platform; const credentials = clean({ access_token: first(record, ['access_token','accessToken','token','api_key','apiKey','key']), id_token: first(record, ['id_token','idToken']), chatgpt_account_id: first(record, ['account_id','chatgpt_account_id']), email: first(record, ['email']), expires_at: first(record, ['expired','expires_at','expiresAt']), plan_type: first(record, ['plan_type']), project_id: first(record, ['project_id']), refresh_token: first(record, ['refresh_token','refreshToken'], '') }); const email = first(record, ['email']); return { exported_at: new Date().toISOString(), proxies: [], accounts: [{ name: first(record, ['name','email'], 'converted-account'), platform: normalizedPlatform, type: 'oauth', concurrency: 10, priority: 1, credentials, extra: clean({ email, email_key: email ? email.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') : '', last_refresh: first(record, ['last_refresh']) }) }] }; }
+    function convertOne(parsed) { if (!$('normalizeCheck').checked) return clean(parsed); if (state.mode === 'session') return { type: 'chatgpt_session', account: first(parsed, ['email','account']), token: first(parsed, ['accessToken','access_token','token','session_token']), user_id: first(parsed, ['userId','user_id','id']), expires_at: first(parsed, ['expiresAt','expires_at'], null) }; if (state.mode === 'cpa') return toSub2Api(parsed); if (state.mode === 'sub2cpa') { const accounts = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.accounts) ? parsed.accounts : [parsed]); return accounts.map(account => toCpa(account, 'codex')); } if (['codex','axonhub','router9','cockpit'].includes(state.mode)) return toSub2Api(parsed); return { accessToken: first(parsed, ['token','accessToken','access_token']), email: first(parsed, ['account','email']), userId: first(parsed, ['id','user_id']) }; }
+    function convert(raw) { const parsed = parseInput(raw); if (state.mode === 'cpa' && Array.isArray(parsed) && $('normalizeCheck').checked) return clean({ exported_at: new Date().toISOString(), proxies: [], accounts: parsed.flatMap(item => toSub2Api(item).accounts) }); const out = Array.isArray(parsed) ? parsed.flatMap(item => { const converted = convertOne(item); return Array.isArray(converted) ? converted : [converted]; }) : convertOne(parsed); return clean(out); }
+    function renderResult(result) { const pretty = $('prettyCheck').checked; const text = pretty ? JSON.stringify(result, null, 2) : JSON.stringify(result); $('outputBox').textContent = text; $('lineCount').textContent = text.split('\n').length; $('byteCount').textContent = new Blob([text]).size; $('statusText').textContent = 'DONE'; state.result = text; addHistory(text); }
+    const formatNames = { session: 'GPT Session', cpa: 'CPA', sub2api: 'Sub2API', codex: 'Codex-Manager', axonhub: 'AxonHub', router9: '9router', cockpit: 'Cockpit' };
+    function setRoute(source, target) { state.source = source; state.target = target; state.mode = source === 'sub2api' ? 'sub2cpa' : source; $('sourceFormat').value = source; $('targetFormat').value = target; $('inputTitle').textContent = `粘贴 ${formatNames[source]} 内容`; $('inputMeta').textContent = `INPUT / ${source.toUpperCase()}`; $('outputTitle').textContent = `${formatNames[target]} 配置`; $('inputText').value = ''; $('outputBox').innerHTML = '<div class="output-empty"><strong>等待转换</strong>结果会显示在这里</div>'; $('lineCount').textContent = '—'; $('byteCount').textContent = '—'; $('statusText').textContent = 'IDLE'; }
+    function setMode(mode) { const presets = { session: ['session','cpa'], cpa: ['cpa','sub2api'], sub2cpa: ['sub2api','cpa'], codex: ['codex','cpa'], axonhub: ['axonhub','cpa'], router9: ['router9','cpa'], cockpit: ['cockpit','cpa'] }; const pair = presets[mode] || ['session','cpa']; document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode)); setRoute(pair[0], pair[1]); }
+    function addHistory(text) { state.history.unshift({ source: state.source, target: state.target, bytes: new Blob([text]).size, time: new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) }); state.history = state.history.slice(0,4); $('historyList').innerHTML = state.history.map((h,i) => `<div class="history-row"><div class="history-main"><div class="file-icon">JS</div><div><div class="history-name">转换结果 ${String(state.history.length-i).padStart(2,'0')}.json</div><div class="history-detail">${h.bytes} bytes · 本地生成</div></div></div><div class="history-mode">${formatNames[h.source]} → ${formatNames[h.target]}</div><div class="history-time">今天 ${h.time}</div><div class="status">DONE</div></div>`).join(''); }
+    function canonicalize(value, source) { let p = value || {}; if (source === 'sub2api') { const account = Array.isArray(p.accounts) ? (p.accounts[0] || {}) : p; const c = account.credentials || {}; const e = account.extra || {}; p = {...account, ...c, email: e.email || c.email || p.email, type: p.platform || 'codex'}; } return { type: first(p, ['type','platform'], 'codex'), access_token: first(p, ['access_token','accessToken','token','api_key','apiKey','key']), refresh_token: first(p, ['refresh_token','refreshToken']), id_token: first(p, ['id_token','idToken']), email: first(p, ['email','account','account.email']), account_id: first(p, ['account_id','chatgpt_account_id']), expired: first(p, ['expired','expires_at','expiresAt','expiry']), last_refresh: first(p, ['last_refresh']), plan_type: first(p, ['plan_type']), base_url: first(p, ['base_url','baseURL','endpoint','url'], 'https://api.openai.com/v1'), model: first(p, ['model','defaultModel','default_model'], 'gpt-4o-mini'), project_id: first(p, ['project_id']) }; }
+    function renderTarget(c, target) { const type = c.type === 'openai' ? 'codex' : c.type; if (target === 'sub2api') return { exported_at: new Date().toISOString(), proxies: [], accounts: [{ name: c.email || 'converted-account', platform: type, type: 'oauth', concurrency: 10, priority: 1, credentials: clean({ access_token: c.access_token, id_token: c.id_token, chatgpt_account_id: c.account_id, email: c.email, expires_at: c.expired, plan_type: c.plan_type, project_id: c.project_id, refresh_token: c.refresh_token || '' }), extra: clean({ email: c.email, email_key: c.email ? c.email.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') : '', last_refresh: c.last_refresh }) }] }; if (target === 'cpa' || target === 'codex') return clean({ type: 'codex', access_token: c.access_token, id_token: c.id_token, account_id: c.account_id, email: c.email, expired: c.expired, last_refresh: c.last_refresh, plan_type: c.plan_type, refresh_token: c.refresh_token || '' }); if (target === 'axonhub') return clean({ name: c.email || 'converted-account', email: c.email, access_token: c.access_token, refresh_token: c.refresh_token, base_url: c.base_url, model: c.model }); if (target === 'router9') return clean({ name: c.email || 'converted-account', key: c.access_token, refreshToken: c.refresh_token, email: c.email, base_url: c.base_url, model: c.model }); if (target === 'cockpit') return clean({ provider: 'openai', email: c.email, apiKey: c.access_token, refreshToken: c.refresh_token, baseURL: c.base_url, defaultModel: c.model }); return clean(c); }
+    function convert(raw) { const parsed = parseInput(raw); const values = Array.isArray(parsed) ? parsed : (state.source === 'sub2api' && Array.isArray(parsed.accounts) ? parsed.accounts : [parsed]); const result = values.map(item => renderTarget(canonicalize(item, state.source), state.target)); return result.length === 1 ? result[0] : result; }
+    function showView(view) { $('convertView').hidden = false; $('oauthView').hidden = false; document.querySelector('.mode-tabs').hidden = false; (view === 'oauth' ? $('oauthView') : $('convertView')).scrollIntoView({behavior:'smooth', block:'start'}); }
+    setRoute('session', 'cpa');
+    $('sourceFormat').addEventListener('change', e => setRoute(e.target.value, $('targetFormat').value));
+    $('targetFormat').addEventListener('change', e => setRoute($('sourceFormat').value, e.target.value));
+    $('convertBtn').addEventListener('click', () => { try { renderResult(convert($('inputText').value)); showToast('转换完成，结果已生成'); } catch (e) { $('statusText').textContent = 'ERROR'; showToast(e.message); } });
+    $('sampleBtn').addEventListener('click', () => { $('inputText').value = samples[state.mode]; showToast('已载入示例数据'); });
+    $('clearBtn').addEventListener('click', () => { $('inputText').value = ''; $('statusText').textContent = 'IDLE'; showToast('输入已清空'); });
+    $('copyBtn').addEventListener('click', async () => { if (!state.result) return showToast('暂无可复制的结果'); await navigator.clipboard.writeText(state.result); showToast('已复制到剪贴板'); });
+    $('downloadBtn').addEventListener('click', () => { if (!state.result) return showToast('暂无可下载的结果'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([state.result], {type:'application/json'})); a.download = `session-${state.mode}-${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href); showToast('文件已开始下载'); });
+    $('clearHistoryBtn').addEventListener('click', () => { state.history = []; $('historyList').innerHTML = '<div class="history-row"><div class="history-main"><div class="file-icon">JS</div><div><div class="history-name">等待第一次转换</div><div class="history-detail">本地记录会出现在这里</div></div></div><div class="history-mode">—</div><div class="history-time">—</div><div class="status">READY</div></div>'; showToast('记录已清除'); });
+    document.querySelectorAll('.mode-tab').forEach(t => t.addEventListener('click', () => setMode(t.dataset.mode)));
+    document.querySelectorAll('[data-nav]').forEach(n => n.addEventListener('click', () => { document.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active')); n.classList.add('active'); if (n.dataset.nav === 'history') $('historyList').scrollIntoView({behavior:'smooth'}); else if (n.dataset.nav === 'validate') showToast('校验功能已集成在转换流程中'); }));
+    $('themeBtn').addEventListener('click', () => { document.body.classList.toggle('dark'); showToast('显示模式已切换'); });
+    function showView(view) { $('convertView').hidden = false; $('oauthView').hidden = false; document.querySelector('.mode-tabs').hidden = false; (view === 'oauth' ? $('oauthView') : $('convertView')).scrollIntoView({behavior:'smooth', block:'start'}); }
+    document.querySelectorAll('[data-nav]').forEach(n => n.addEventListener('click', () => { document.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active')); n.classList.add('active'); showView(n.dataset.nav === 'oauth' ? 'oauth' : 'convert'); }));
+    const oauthConfig = { clientId: 'app_EMoamEEZ73f0CkXaXp7hrann', redirectUri: 'http://localhost:1455/auth/callback', scope: 'openid profile email offline_access', authorizationUrl: 'https://auth.openai.com/oauth/authorize' };
+    const oauthState = { verifier: '', challenge: '', state: '', link: '', pollTimer: null };
+    const oauthServer = location.protocol === 'file:' ? 'http://localhost:1455' : location.origin;
+    function randomString(length = 64) { const bytes = new Uint8Array(length); crypto.getRandomValues(bytes); return Array.from(bytes, byte => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[byte % 66]).join(''); }
+    async function sha256Base64Url(input) { const data = new TextEncoder().encode(input); const digest = await crypto.subtle.digest('SHA-256', data); let binary = ''; new Uint8Array(digest).forEach(byte => binary += String.fromCharCode(byte)); return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, ''); }
+    function extractOauthCode(value) { const text = String(value || '').trim(); if (!text) return ''; if (/^https?:\/\//i.test(text)) { try { return new URL(text).searchParams.get('code') || ''; } catch (_) { return ''; } } return text; }
+    function persistOauth() { sessionStorage.setItem('session-forge.oauth', JSON.stringify({ verifier: oauthState.verifier, challenge: oauthState.challenge, state: oauthState.state, link: oauthState.link })); }
+    function startCallbackPolling() { clearInterval(oauthState.pollTimer); oauthState.pollTimer = setInterval(async () => { if (!oauthState.state) return; try { const response = await fetch(`${oauthServer}/oauth-status?state=${encodeURIComponent(oauthState.state)}`); if (!response.ok) return; const data = await response.json(); if (!data.code) return; $('oauthCode').value = data.code; clearInterval(oauthState.pollTimer); showToast('已自动收到 OAuth 回调'); $('oauthOutput').textContent = '回调已收到，点击“生成（含 refresh_token）”继续。'; } catch (_) {} }, 1200); }
+    $('oauthUrlBtn').addEventListener('click', async () => { oauthState.verifier = randomString(96); oauthState.challenge = await sha256Base64Url(oauthState.verifier); oauthState.state = randomString(48); const url = new URL(oauthConfig.authorizationUrl); url.search = new URLSearchParams({ client_id: oauthConfig.clientId, redirect_uri: oauthConfig.redirectUri, response_type: 'code', scope: oauthConfig.scope, code_challenge: oauthState.challenge, code_challenge_method: 'S256', state: oauthState.state, nonce: randomString(48) }).toString(); oauthState.link = url.toString(); $('oauthLink').value = oauthState.link; persistOauth(); startCallbackPolling(); showToast('OAuth 登录链接已生成'); });
+    $('oauthOpenBtn').addEventListener('click', () => { if (!oauthState.link) return showToast('请先生成 OAuth 登录链接'); const popup = window.open(oauthState.link, '_blank', 'noopener,noreferrer'); if (!popup) showToast('登录页被浏览器拦截，请复制链接打开'); else showToast('登录页已打开'); });
+    $('oauthExchangeBtn').addEventListener('click', async () => { const code = extractOauthCode($('oauthCode').value); if (!code) return showToast('请先完成登录或粘贴回调 URL'); if (!oauthState.verifier) return showToast('请先生成本次 OAuth 登录链接'); $('oauthOutput').textContent = '正在兑换 token…'; try { const response = await fetch(`${oauthServer}/exchange`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ code, code_verifier: oauthState.verifier, redirect_uri: oauthConfig.redirectUri }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error_description || data.error || data.message || `HTTP ${response.status}`); const formatted = renderTarget(canonicalize(data, 'session'), state.target); const result = JSON.stringify(formatted, null, 2); $('oauthOutput').textContent = result; state.result = result; sessionStorage.removeItem('session-forge.oauth'); clearInterval(oauthState.pollTimer); showToast(data.refresh_token ? `已生成含 refresh_token 的 ${formatNames[state.target]} 配置` : '兑换成功，但结果不含 refresh_token'); } catch (error) { $('oauthOutput').textContent = JSON.stringify({ error: error.message, hint: '请通过 http://localhost:1455 打开工具并重试' }, null, 2); showToast('OAuth 兑换失败'); } });
+    $('oauthCopyBtn').addEventListener('click', async () => { const value = $('oauthOutput').textContent.trim(); if (!value) return showToast('暂无可复制结果'); await navigator.clipboard.writeText(value); showToast('OAuth 结果已复制'); });
+    async function loadJsonFiles(fileList) { const files = Array.from(fileList || []).filter(file => file.name.toLowerCase().endsWith('.json')); if (!files.length) return showToast('没有找到 JSON 文件'); const records = []; const errors = []; for (const file of files) { try { const parsed = JSON.parse(await file.text()); if (Array.isArray(parsed)) records.push(...parsed); else if (state.source === 'sub2api' && Array.isArray(parsed.accounts)) records.push(...parsed.accounts); else records.push(parsed); } catch (_) { errors.push(file.name); } } if (records.length) $('inputText').value = JSON.stringify(records.length === 1 ? records[0] : records, null, 2); showToast(`已载入 ${records.length} 条记录${errors.length ? `，${errors.length} 个文件失败` : ''}`); }
+    $('fileBtn').addEventListener('click', () => $('fileInput').click());
+    $('folderBtn').addEventListener('click', () => $('folderInput').click());
+    $('fileInput').addEventListener('change', e => loadJsonFiles(e.target.files));
+    $('folderInput').addEventListener('change', e => loadJsonFiles(e.target.files));
+    const dz = $('dropZone'); dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); }); dz.addEventListener('dragleave', () => dz.classList.remove('drag')); dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); loadJsonFiles(e.dataTransfer.files); });
+    try { const saved = JSON.parse(sessionStorage.getItem('session-forge.oauth') || 'null'); if (saved) { Object.assign(oauthState, saved); $('oauthLink').value = oauthState.link || ''; if (oauthState.state) startCallbackPolling(); } } catch (_) {}
+  </script>
+</body>
+</html>
