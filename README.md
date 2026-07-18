@@ -23,7 +23,7 @@
 在项目目录执行：
 
 ```powershell
-cd "D:\github-project\GPTSession_convert"
+cd GPTSession_convert
 docker compose up -d --build
 ```
 
@@ -62,7 +62,7 @@ docker compose up -d --build
 需要 Node.js 18 或更高版本。
 
 ```powershell
-cd "D:\github-project\GPTSession_convert"
+cd GPTSession_convert
 node server.js
 ```
 
