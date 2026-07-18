@@ -2,6 +2,8 @@
 
 一个浏览器本地运行的 Session 格式转换工具，支持 GPT Session、CPA、Sub2API、Codex-Manager、AxonHub、9router 和 Cockpit 之间的格式转换，并提供 OpenAI OAuth 登录、回调和 `refresh_token` 生成流程。
 
+![alt text](image.png)![alt text](image-1.png)
+
 ## 功能
 
 - GPT Session 转换为 CPA、Sub2API、Codex-Manager、AxonHub、9router、Cockpit
