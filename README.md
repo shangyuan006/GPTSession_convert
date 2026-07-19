@@ -97,6 +97,22 @@ ZIP 导入依赖现代浏览器的 DecompressionStream，建议使用最新版 C
 
 默认端口为 `1455`。Docker 部署时可以修改 `docker-compose.yml` 中的端口映射；如果修改了宿主机端口，OAuth 回调仍需要保持 `localhost:1455`，否则需要同步调整 OAuth Client 配置和页面中的回调地址。
 
+## 参考项目与网站
+
+本项目在格式设计、输入识别、OAuth 流程和界面交互方面参考了以下公开项目与网站：
+
+- [gtxx3600/GPTSession2CPAandSub2API](https://github.com/gtxx3600/GPTSession2CPAandSub2API)
+- [gtxx3600/CPA2sub2API](https://github.com/gtxx3600/CPA2sub2API)
+- [ltxgit/authconv](https://github.com/ltxgit/authconv)
+- [authconv 在线演示](https://ltxgit.github.io/authconv/)
+- [nloop Conversion](https://conversion.nloop.cc/)
+- [Anything Tools ChatGPT Session Converter](https://anything.tools/zh-CN/dev/chatgpt-session-converter)
+- [yangmx.bond Session 转换与 OAuth 工具](https://yangmx.bond/session2json/)
+
+## 鸣谢
+
+感谢上述项目和网站作者公开分享格式转换、凭据归一化、OAuth/PKCE、JWT 验证和批量导入导出的实现思路。本项目为独立实现，保留了 AxonHub、9router、Cockpit 等额外格式，并根据本项目的使用场景重新组织了转换流程和界面。
+
 ## 安全说明
 
 - Session、JSON 和转换结果默认在浏览器本地处理。
