@@ -6,113 +6,38 @@
   <title>Session Forge · 会话转换工具</title>
   <meta name="description" content="在本地完成 OpenAI/Grok OAuth、CPA、Sub2API 与多种凭据格式转换。" />
   <style>
-    :root {
-      --ink: #12233b;
-      --ink-soft: #58677b;
-      --paper: #f7f9fc;
-      --panel: #ffffff;
-      --line: #e4eaf2;
-      --accent: #2c67f2;
-      --accent-soft: #edf3ff;
-      --mint: #19a985;
-      --mint-soft: #e8f8f3;
-      --warn: #d8882d;
-      --danger: #c95b63;
-      --shadow: 0 18px 48px rgba(25, 47, 79, .08);
-      --mono: 'DM Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
-      --sans: 'Manrope', 'Segoe UI', sans-serif;
-    }
-    body.dark {
-      --ink: #edf4ff;
-      --ink-soft: #a5b5c9;
-      --paper: #0c1728;
-      --panel: #122238;
-      --line: #263a53;
-      --accent-soft: #1a3566;
-      --mint-soft: #153d38;
-      --shadow: 0 18px 48px rgba(0, 0, 0, .22);
-    }
     body.dark .sidebar, body.dark .topbar { background: rgba(13, 28, 47, .88); }
     body.dark .panel, body.dark .option, body.dark .icon-btn, body.dark .secondary, body.dark .arrow { background: var(--panel); }
-    body.dark .output-box { background: #091321; }
     body.dark .nav button:hover { background: #182b45; }
     body.dark .drop-hint, body.dark textarea::placeholder { color: #768aa4; }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
     button, textarea, input { font: inherit; }
     button { cursor: pointer; }
-    .app { min-height: 100vh; display: grid; grid-template-columns: 238px 1fr; }
-    .sidebar { border-right: 1px solid var(--line); background: rgba(255,255,255,.82); padding: 28px 17px 22px; display: flex; flex-direction: column; }
-    .brand { display: flex; align-items: center; gap: 11px; padding: 0 11px 30px; }
-    .brand-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--ink); color: #fff; font-weight: 800; letter-spacing: -1px; }
-    .brand-title { font-weight: 800; letter-spacing: -.4px; }
-    .brand-sub { color: var(--ink-soft); font-size: 11px; margin-top: 2px; }
-    .nav-label { color: #9ba7b6; font: 500 10px var(--mono); letter-spacing: .8px; text-transform: uppercase; padding: 0 12px 9px; }
-    .nav { display: grid; gap: 5px; }
-    .nav button { border: 0; width: 100%; background: transparent; color: var(--ink-soft); text-align: left; padding: 11px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
-    .nav button:hover { background: #f3f6fa; color: var(--ink); }
-    .nav button.active { color: var(--accent); background: var(--accent-soft); font-weight: 700; }
     .nav-icon { width: 17px; height: 17px; display: grid; place-items: center; font-size: 15px; }
-    .sidebar-footer { margin-top: auto; border-top: 1px solid var(--line); padding: 18px 11px 0; color: var(--ink-soft); font-size: 11px; line-height: 1.55; }
     .privacy { display: flex; gap: 7px; align-items: flex-start; }
     .privacy-dot { width: 7px; height: 7px; margin-top: 4px; border-radius: 50%; background: var(--mint); flex: 0 0 auto; }
     main { min-width: 0; }
-    .topbar { height: 74px; border-bottom: 1px solid var(--line); padding: 0 42px; display: flex; align-items: center; justify-content: space-between; background: rgba(247,249,252,.72); }
     .crumb { display: flex; align-items: center; gap: 9px; color: var(--ink-soft); font-size: 12px; }
     .crumb strong { color: var(--ink); font-weight: 700; }
     .top-actions { display: flex; align-items: center; gap: 14px; }
-    .online { display: flex; align-items: center; gap: 7px; font: 500 11px var(--mono); color: var(--mint); }
-    .online i { display: block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px var(--mint-soft); }
-    .icon-btn { width: 34px; height: 34px; border: 1px solid var(--line); background: #fff; border-radius: 8px; color: var(--ink-soft); display: grid; place-items: center; }
     .icon-btn:hover { border-color: #c9d5e5; color: var(--ink); }
-    .content { max-width: 1340px; margin: 0 auto; padding: 45px 42px 64px; }
-    .heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin-bottom: 34px; }
-    .eyebrow { color: var(--accent); font: 500 10px var(--mono); letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 12px; }
-    h1 { font-size: clamp(28px, 3vw, 40px); line-height: 1.1; letter-spacing: -1.3px; margin: 0 0 11px; }
-    .intro { max-width: 560px; color: var(--ink-soft); font-size: 14px; line-height: 1.7; margin: 0; }
-    .heading-note { border-left: 2px solid var(--accent); padding: 7px 0 7px 14px; max-width: 235px; color: var(--ink-soft); font-size: 12px; line-height: 1.6; }
-    .mode-tabs { display: flex; overflow-x: auto; border-bottom: 1px solid var(--line); margin-bottom: 22px; gap: 6px; scrollbar-width: thin; }
-    .mode-tab { flex: 0 0 auto; white-space: nowrap; border: 0; background: transparent; color: var(--ink-soft); padding: 12px 16px 13px; position: relative; font-size: 13px; }
-    .mode-tab.active { color: var(--ink); font-weight: 700; }
-    .mode-tab.active::after { content: ''; position: absolute; height: 2px; left: 11px; right: 11px; bottom: -1px; background: var(--accent); }
-    .route-controls { display: grid; grid-template-columns: minmax(0,1fr) 36px minmax(0,1fr); gap: 12px; align-items: end; margin: -5px 0 22px; }
-    .route-field { display: grid; gap: 7px; }
-    .route-field label { color: var(--ink-soft); font: 500 10px var(--mono); letter-spacing: .6px; text-transform: uppercase; }
+    .route-field label { font: 500 10px var(--mono); text-transform: uppercase; }
     .route-field select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); padding: 10px 11px; outline: 0; font-size: 12px; }
     .route-field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
     .route-field select:disabled { opacity: 1; cursor: default; color: var(--ink); }
-    .route-arrow { display: grid; place-items: center; color: var(--accent); font-size: 18px; padding-bottom: 8px; }
-    .workflow { display: grid; grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr); align-items: stretch; }
-    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); min-width: 0; }
-    .panel-head { padding: 18px 20px 15px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
-    .panel-title { font-weight: 700; font-size: 13px; }
     .panel-meta { color: #9aa7b6; font: 500 10px var(--mono); }
-    .panel-body { padding: 18px 20px 20px; }
-    .input-zone { border: 1px dashed #c5d2e3; border-radius: 8px; min-height: 289px; padding: 15px; display: flex; flex-direction: column; position: relative; transition: .2s; }
-    .input-zone.drag { border-color: var(--accent); background: var(--accent-soft); }
     textarea { resize: none; border: 0; outline: 0; width: 100%; flex: 1; color: var(--ink); line-height: 1.65; background: transparent; font: 12px var(--mono); }
     textarea::placeholder { color: #aab5c2; }
-    .drop-hint { display: flex; align-items: center; gap: 9px; color: #99a7b8; font-size: 11px; padding-top: 12px; }
-    .drop-hint span { color: var(--accent); font-size: 15px; }
     .panel-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 13px; }
     .import-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
     .utility { border: 0; background: transparent; padding: 5px 0; color: var(--ink-soft); font-size: 11px; }
     .utility:hover { color: var(--accent); }
-    .primary { border: 0; background: var(--accent); color: #fff; border-radius: 7px; padding: 10px 16px; font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(44,103,242,.2); }
-    .primary:hover { background: #1f56d7; }
-    .secondary { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 7px; padding: 9px 13px; font-size: 12px; font-weight: 600; }
-    .secondary:hover { border-color: #b7c6da; }
+    .secondary { padding: 9px 13px; font-size: 12px; }
     .arrow-col { display: grid; place-items: center; color: #a8b5c4; }
-    .arrow { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 16px; }
-    .output-box { min-height: 289px; border-radius: 8px; background: #101f34; color: #d9e6f7; overflow: auto; padding: 16px; font: 11px/1.7 var(--mono); white-space: pre-wrap; word-break: break-word; }
-    .output-empty { height: 254px; display: grid; place-content: center; text-align: center; color: #71839b; font-family: var(--sans); font-size: 12px; }
-    .output-empty strong { color: #a3b4ca; font-weight: 600; display: block; margin-bottom: 5px; }
-    .stats { display: flex; gap: 22px; margin-top: 15px; color: var(--ink-soft); font: 10px var(--mono); }
     .stats b { color: var(--ink); font-weight: 500; }
     .result-actions { display: flex; gap: 8px; align-items: center; }
     .result-actions .secondary { padding: 7px 9px; font-size: 11px; }
     .compact-select { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 7px; padding: 7px 27px 7px 9px; font-size: 11px; outline: 0; }
-    .verification-bar { margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--ink-soft); font-size: 11px; }
     .verification-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .verification-summary strong { color: var(--ink); font-size: 12px; }
     .verification-badge { border-radius: 5px; padding: 4px 7px; background: #edf2f8; color: var(--ink-soft); font: 10px var(--mono); }
@@ -120,27 +45,17 @@
     .verification-badge.forged { background: #fff0ee; color: #b42318; }
     .verification-badge.unverifiable { background: #fff7e8; color: #9a6200; }
     .verification-source { text-align: right; font: 10px/1.5 var(--mono); }
-    .options { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-    .option { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 16px; display: flex; gap: 11px; align-items: flex-start; }
     .option input { accent-color: var(--accent); margin-top: 3px; }
-    .option-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
-    .option-copy { color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
-    .history { margin-top: 34px; }
     .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 13px; }
     .section-title { font-size: 14px; font-weight: 800; letter-spacing: -.2px; }
     .section-link { color: var(--accent); border: 0; background: transparent; font-size: 11px; }
-    .history-list { border-top: 1px solid var(--line); }
-    .history-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 20px; align-items: center; padding: 15px 4px; border-bottom: 1px solid var(--line); font-size: 11px; }
     .history-main { display: flex; align-items: center; gap: 10px; }
-    .file-icon { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font: 11px var(--mono); }
     .history-name { font-weight: 700; }
     .history-detail { color: var(--ink-soft); font-size: 10px; margin-top: 3px; }
     .history-mode, .history-time { color: var(--ink-soft); }
-    .status { color: var(--mint); display: flex; align-items: center; gap: 6px; }
     .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .toast { position: fixed; right: 24px; bottom: 24px; background: var(--ink); color: #fff; padding: 11px 15px; border-radius: 7px; font-size: 12px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .22s; }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .oauth-panel { margin-top: 4px; }
     .oauth-panel[hidden] { display: none; }
     .oauth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .field { display: grid; gap: 7px; }
@@ -152,12 +67,7 @@
     .oauth-actions { display:flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; }
     .oauth-note { color: var(--ink-soft); font-size: 11px; line-height: 1.55; }
     .oauth-output { margin-top: 18px; }
-    .oauth-output pre { margin: 0; min-height: 120px; white-space: pre-wrap; word-break: break-word; background: #101f34; color: #d9e6f7; border-radius: 8px; padding: 14px; font: 11px/1.6 var(--mono); }
     body.dark .field input, body.dark .field textarea { background: #0d1c30; }
-    body.dark .oauth-output pre { background: #091321; }
-    @media (max-width: 930px) { .app { grid-template-columns: 70px 1fr; } .sidebar { padding: 20px 10px; } .brand { padding: 0 8px 28px; } .brand-copy, .nav-label, .nav button span, .sidebar-footer { display: none; } .nav button { justify-content: center; padding: 12px 0; } .topbar { padding: 0 24px; } .content { padding: 34px 24px 50px; } }
-    @media (max-width: 700px) { .heading { display: block; } .heading-note { margin-top: 18px; max-width: none; } .workflow { grid-template-columns: 1fr; gap: 10px; } .arrow-col { transform: rotate(90deg); height: 28px; } .options { grid-template-columns: 1fr; } .history-row { grid-template-columns: 1fr auto; gap: 8px; } .history-mode, .history-time { display: none; } h1 { font-size: 30px; } }
-    @media (max-width: 560px) { .route-controls { grid-template-columns: 1fr; gap: 7px; } .route-arrow { transform: rotate(90deg); padding: 0; height: 20px; } }
 
     /* Authconv-inspired surface system: quiet neutral canvas, compact controls, low-contrast glass panels. */
     :root {
@@ -187,6 +97,7 @@
       --shadow: 0 10px 16px rgba(0, 0, 0, .22), 0 2px 5px rgba(0, 0, 0, .18);
     }
     body {
+      margin: 0;
       background: var(--paper);
       color: var(--ink);
       font-family: var(--sans);
@@ -195,6 +106,7 @@
       padding: 28px 20px;
     }
     .app {
+      display: grid;
       width: min(1480px, 100%);
       min-height: calc(100vh - 56px);
       margin: 0 auto;
@@ -202,6 +114,8 @@
       gap: 18px;
     }
     .sidebar {
+      display: flex;
+      flex-direction: column;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: var(--panel);
@@ -211,11 +125,18 @@
       padding: 22px 14px 18px;
     }
     .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
       padding: 0 9px 24px;
       margin-bottom: 7px;
       border-bottom: 1px solid var(--line);
     }
     .brand-mark {
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
       width: 32px;
       height: 32px;
       border-radius: 9px;
@@ -223,15 +144,24 @@
       letter-spacing: 0;
       box-shadow: 0 4px 10px rgba(15, 118, 110, .16);
     }
-    .brand-title { letter-spacing: 0; }
-    .brand-sub { color: var(--ink-soft); }
+    .brand-title { font-weight: 800; letter-spacing: 0; }
+    .brand-sub { font-size: 11px; margin-top: 2px; color: var(--ink-soft); }
     .nav-label {
+      font: 500 10px var(--mono);
+      text-transform: uppercase;
       color: var(--ink-soft);
       letter-spacing: .12em;
       padding: 14px 10px 8px;
     }
-    .nav { gap: 3px; }
+    .nav { display: grid; gap: 3px; }
     .nav button {
+      width: 100%;
+      background: transparent;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
       border: 1px solid transparent;
       border-radius: 8px;
       color: var(--ink-soft);
@@ -240,31 +170,46 @@
     }
     .nav button:hover { background: rgba(255, 255, 255, .45); border-color: var(--line); color: var(--ink); }
     .nav button.active {
+      font-weight: 700;
       background: var(--accent-soft);
       border-color: rgba(15, 118, 110, .16);
       color: var(--accent);
     }
-    .sidebar-footer { border-color: var(--line); padding: 16px 9px 0; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 11px; line-height: 1.55; border-color: var(--line); padding: 16px 9px 0; }
     .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       height: 58px;
       padding: 0 28px;
       border-bottom: 1px solid var(--line);
       background: transparent;
     }
-    .online { color: var(--accent); }
-    .online i { box-shadow: 0 0 0 4px var(--mint-soft); }
+    .online { display: flex; align-items: center; gap: 7px; font: 500 11px var(--mono); color: var(--accent); }
+    .online i { display: block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px var(--mint-soft); }
     .icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      color: var(--ink-soft);
+      display: grid;
+      place-items: center;
       border-color: var(--line);
       background: var(--panel);
       border-radius: 20px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
     }
-    .content { max-width: none; padding: 32px 28px 54px; }
-    .heading { margin-bottom: 27px; }
-    .eyebrow { color: var(--accent); letter-spacing: .14em; }
-    h1 { font-size: clamp(28px, 3vw, 36px); letter-spacing: -.6px; }
-    .intro { color: var(--ink-soft); font-size: 13px; line-height: 1.65; }
+    .content { margin: 0 auto; max-width: none; padding: 32px 28px 54px; }
+    .heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin-bottom: 27px; }
+    .eyebrow { font: 500 10px var(--mono); text-transform: uppercase; margin-bottom: 12px; color: var(--accent); letter-spacing: .14em; }
+    h1 { line-height: 1.1; margin: 0 0 11px; font-size: clamp(28px, 3vw, 36px); letter-spacing: -.6px; }
+    .intro { max-width: 560px; margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.65; }
     .heading-note {
+      border-left: 2px solid var(--accent);
+      padding: 7px 0 7px 14px;
+      max-width: 235px;
+      font-size: 12px;
+      line-height: 1.6;
       border-left-color: var(--accent);
       color: var(--ink-soft);
       background: rgba(255, 255, 255, .28);
@@ -272,6 +217,9 @@
       padding-right: 12px;
     }
     .mode-tabs {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: thin;
       gap: 3px;
       padding: 4px;
       margin-bottom: 18px;
@@ -280,16 +228,22 @@
       background: rgba(255, 255, 255, .38);
     }
     .mode-tab {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      border: 0;
+      background: transparent;
+      color: var(--ink-soft);
+      position: relative;
       border-radius: 7px;
       padding: 9px 13px;
       font-size: 12px;
       transition: background .15s ease, color .15s ease;
     }
     .mode-tab:hover { background: rgba(255, 255, 255, .62); color: var(--ink); }
-    .mode-tab.active { background: var(--accent); color: #fff; }
-    .mode-tab.active::after { display: none; }
-    .route-controls { margin: 0 0 18px; gap: 10px; }
-    .route-field { gap: 6px; }
+    .mode-tab.active { font-weight: 700; background: var(--accent); color: #fff; }
+    .mode-tab.active::after { content: ''; position: absolute; height: 2px; left: 11px; right: 11px; bottom: -1px; background: var(--accent); display: none; }
+    .route-controls { display: grid; grid-template-columns: minmax(0,1fr) 36px minmax(0,1fr); align-items: end; margin: 0 0 18px; gap: 10px; }
+    .route-field { display: grid; gap: 6px; }
     .route-field label {
       color: var(--ink-soft);
       letter-spacing: .1em;
@@ -304,9 +258,11 @@
     }
     .route-field select:focus,
     .compact-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(15, 118, 110, .12); }
-    .route-arrow { color: var(--accent); }
-    .workflow { gap: 0; }
+    .route-arrow { display: grid; place-items: center; font-size: 18px; padding-bottom: 8px; color: var(--accent); }
+    .workflow { display: grid; grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr); align-items: stretch; gap: 0; }
     .panel {
+      border: 1px solid var(--line);
+      min-width: 0;
       border-color: var(--line);
       border-radius: 12px;
       background: var(--panel);
@@ -314,8 +270,8 @@
       -webkit-backdrop-filter: blur(20px);
       box-shadow: var(--shadow);
     }
-    .panel-head { padding: 16px 18px 13px; }
-    .panel-title { font-size: 13px; }
+    .panel-head { border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 13px; }
+    .panel-title { font-weight: 700; font-size: 13px; }
     .panel-body { padding: 16px 18px 18px; }
     .session-fetch {
       min-height: 32px;
@@ -326,6 +282,11 @@
     }
     .panel-head > div:first-child { min-width: 0; }
     .input-zone {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: .2s;
       min-height: 304px;
       border: 1px dashed #94a3b8;
       border-radius: 9px;
@@ -337,9 +298,13 @@
       background: var(--accent-soft);
       box-shadow: 0 0 0 3px rgba(15, 118, 110, .1);
     }
-    .drop-hint { color: var(--ink-soft); }
-    .drop-hint span { color: var(--accent); }
+    .drop-hint { display: flex; align-items: center; gap: 9px; font-size: 11px; padding-top: 12px; color: var(--ink-soft); }
+    .drop-hint span { font-size: 15px; color: var(--accent); }
     .primary {
+      color: #fff;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 700;
       min-height: 38px;
       border: 1px solid var(--accent);
       border-radius: 8px;
@@ -348,6 +313,8 @@
     }
     .primary:hover { background: #0d5c4e; }
     .secondary {
+      color: var(--ink);
+      font-weight: 600;
       min-height: 36px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -356,11 +323,23 @@
     }
     .secondary:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
     .arrow {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
       border-color: var(--line);
       background: var(--panel);
       box-shadow: var(--shadow);
     }
     .output-box {
+      overflow: auto;
+      padding: 16px;
+      font: 11px/1.7 var(--mono);
+      white-space: pre-wrap;
+      word-break: break-word;
       min-height: 304px;
       border: 1px solid var(--line);
       border-radius: 9px;
@@ -368,13 +347,20 @@
       color: #1e293b;
       box-shadow: inset 0 1px 3px rgba(15, 23, 42, .04);
     }
-    .output-empty { color: #64748b; }
-    .output-empty strong { color: #334155; }
+    .output-empty { height: 254px; display: grid; place-content: center; text-align: center; font-family: var(--sans); font-size: 12px; color: #64748b; }
+    .output-empty strong { font-weight: 600; display: block; margin-bottom: 5px; color: #334155; }
     body.dark .output-box { background: #05070a; color: #e2e8f0; border-color: var(--line); }
     body.dark .output-empty { color: #94a3b8; }
     body.dark .output-empty strong { color: #cbd5e1; }
-    .stats { margin-top: 12px; gap: 18px; }
+    .stats { display: flex; color: var(--ink-soft); font: 10px var(--mono); margin-top: 12px; gap: 18px; }
     .verification-bar {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--ink-soft);
+      font-size: 11px;
       border-color: var(--line);
       border-radius: 10px;
       background: var(--panel);
@@ -443,6 +429,7 @@
       font-size: 11px;
     }
     .options {
+      grid-template-columns: 1fr 1fr 1fr;
       margin-top: 16px;
       display: flex;
       align-items: center;
@@ -453,6 +440,8 @@
       background: rgba(255, 255, 255, .42);
     }
     .option {
+      display: flex;
+      align-items: flex-start;
       flex: 1 1 160px;
       min-height: 48px;
       padding: 8px 9px;
@@ -462,15 +451,22 @@
       background: transparent;
     }
     .option:hover { background: rgba(255, 255, 255, .62); }
-    .option-title { font-size: 11px; margin-bottom: 2px; }
-    .option-copy { font-size: 10px; line-height: 1.35; }
+    .option-title { font-weight: 700; font-size: 11px; margin-bottom: 2px; }
+    .option-copy { color: var(--ink-soft); font-size: 10px; line-height: 1.35; }
     .history { margin-top: 28px; }
-    .history-list { border-top-color: var(--line); }
-    .history-row { padding: 13px 4px; }
-    .file-icon { border-radius: 7px; background: var(--accent-soft); color: var(--accent); }
-    .status { color: var(--accent); }
+    .history-list { border-top: 1px solid var(--line); border-top-color: var(--line); }
+    .history-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); font-size: 11px; padding: 13px 4px; }
+    .file-icon { width: 26px; height: 26px; display: grid; place-items: center; font: 11px var(--mono); border-radius: 7px; background: var(--accent-soft); color: var(--accent); }
+    .status { display: flex; align-items: center; gap: 6px; color: var(--accent); }
     .oauth-panel { margin-top: 12px; }
     .oauth-output pre {
+      margin: 0;
+      min-height: 120px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 8px;
+      padding: 14px;
+      font: 11px/1.6 var(--mono);
       border: 1px solid var(--line);
       background: #f8fafc;
       color: #1e293b;
@@ -484,12 +480,21 @@
     body.dark .input-zone { background: rgba(2, 6, 23, .28); border-color: #475569; }
     body.dark .oauth-output pre { background: #05070a; color: #e2e8f0; }
     @media (max-width: 930px) {
+      .brand-copy, .nav-label, .nav button span, .sidebar-footer { display: none; }
+      .nav button { justify-content: center; }
       body { padding: 18px 12px; }
       .app { min-height: calc(100vh - 36px); margin: 0 auto; }
       .sidebar { border-radius: 12px; }
       .content { padding-left: 22px; padding-right: 22px; }
     }
     @media (max-width: 700px) {
+      .heading { display: block; }
+      .heading-note { margin-top: 18px; max-width: none; }
+      .workflow { grid-template-columns: 1fr; }
+      .arrow-col { transform: rotate(90deg); height: 28px; }
+      .options { grid-template-columns: 1fr; }
+      .history-row { grid-template-columns: 1fr auto; gap: 8px; }
+      .history-mode, .history-time { display: none; }
       .topbar { padding: 0 18px; }
       .content { padding: 25px 16px 42px; }
       .mode-tabs { border-radius: 9px; }
@@ -497,6 +502,8 @@
       .verification-source { display: none; }
     }
     @media (max-width: 560px) {
+      .route-controls { grid-template-columns: 1fr; }
+      .route-arrow { transform: rotate(90deg); padding: 0; height: 20px; }
       .panel-head { align-items: flex-start; gap: 10px; }
       .session-fetch { max-width: 148px; white-space: normal; line-height: 1.25; }
       .verification-row.header { display: none; }
@@ -555,43 +562,27 @@
     };
     const state = { mode: 'session', result: null, history: [] };
     const $ = id => document.getElementById(id);
-    const modeLabels = { session: ['粘贴 OpenAI / Grok OAuth JSON / JSONL','INPUT / OAUTH JSON','CPA 配置'], cpa: ['粘贴 CPA 配置','INPUT / CPA','Sub2API 配置'], sub2cpa: ['粘贴 Sub2API 配置','INPUT / SUB2API','CPA 配置'], codex: ['粘贴 Codex-Manager 配置','INPUT / CODEX-MANAGER','CPA 配置'], axonhub: ['粘贴 AxonHub 配置','INPUT / AXONHUB','CPA 配置'], router9: ['粘贴 9router 配置','INPUT / 9ROUTER','CPA 配置'], cockpit: ['粘贴 Cockpit 配置','INPUT / COCKPIT','CPA 配置'] };
     function showToast(message) { const t = $('toast'); t.textContent = message; t.classList.add('show'); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => t.classList.remove('show'), 2200); }
-    function setMode(mode) { state.mode = mode; document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode)); const l = modeLabels[mode]; $('inputTitle').textContent = l[0]; $('inputMeta').textContent = l[1]; $('outputTitle').textContent = l[2]; $('inputText').value = ''; $('outputBox').innerHTML = '<div class="output-empty"><strong>等待转换</strong>结果会显示在这里</div>'; $('lineCount').textContent = '—'; $('byteCount').textContent = '—'; $('statusText').textContent = 'IDLE'; }
-    function parseInput(raw) { const text = raw.trim(); if (!text) throw new Error('请输入内容后再转换'); try { return JSON.parse(text); } catch (_) {} if (text.includes('=') && !text.includes('{')) { const out = {}; text.split(/[\n,;]+/).forEach(pair => { const i = pair.indexOf('='); if (i > 0) out[pair.slice(0,i).trim()] = pair.slice(i+1).trim(); }); if (Object.keys(out).length) return out; } return { token: text }; }
     function clean(obj) { if (Array.isArray(obj)) return obj.map(clean); if (!obj || typeof obj !== 'object') return obj; const out = {}; Object.entries(obj).forEach(([k,v]) => { const nv = clean(v); if (!$('stripCheck').checked || (nv !== null && nv !== '')) out[k] = nv; }); return out; }
     function first(obj, keys, fallback = '') { for (const key of keys) { const parts = key.split('.'); let value = obj; for (const part of parts) value = value && value[part]; if (value !== undefined && value !== null && value !== '') return value; } return fallback; }
-    function toCpa(account, source) { const credentials = account.credentials || {}; const extra = account.extra || {}; const platform = String(account.platform || source || 'codex').toLowerCase(); const isCodex = platform === 'openai' || platform === 'codex'; return clean({ type: isCodex ? 'codex' : platform, access_token: first(credentials, ['access_token','accessToken','token']), id_token: first(credentials, ['id_token','idToken']), account_id: first(credentials, ['chatgpt_account_id','account_id']), email: first(extra, ['email']) || first(credentials, ['email','email_address']), expired: first(credentials, ['expires_at','expiry']), last_refresh: first(extra, ['last_refresh']), plan_type: first(credentials, ['plan_type']), project_id: first(credentials, ['project_id']), refresh_token: first(credentials, ['refresh_token','refreshToken'], '') }); }
-    function toSub2Api(record) { const platform = String(first(record, ['type','platform'], 'codex')).toLowerCase(); const normalizedPlatform = platform === 'openai' ? 'codex' : platform; const credentials = clean({ access_token: first(record, ['access_token','accessToken','token','api_key','apiKey','key']), id_token: first(record, ['id_token','idToken']), chatgpt_account_id: first(record, ['account_id','chatgpt_account_id']), email: first(record, ['email']), expires_at: first(record, ['expired','expires_at','expiresAt']), plan_type: first(record, ['plan_type']), project_id: first(record, ['project_id']), refresh_token: first(record, ['refresh_token','refreshToken'], '') }); const email = first(record, ['email']); return { exported_at: new Date().toISOString(), proxies: [], accounts: [{ name: first(record, ['name','email'], 'converted-account'), platform: normalizedPlatform, type: 'oauth', concurrency: 10, priority: 1, credentials, extra: clean({ email, email_key: email ? email.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') : '', last_refresh: first(record, ['last_refresh']) }) }] }; }
-    function convertOne(parsed) { if (!$('normalizeCheck').checked) return clean(parsed); if (state.mode === 'session') return { type: 'chatgpt_session', account: first(parsed, ['email','account']), token: first(parsed, ['accessToken','access_token','token','session_token']), user_id: first(parsed, ['userId','user_id','id']), expires_at: first(parsed, ['expiresAt','expires_at'], null) }; if (state.mode === 'cpa') return toSub2Api(parsed); if (state.mode === 'sub2cpa') { const accounts = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.accounts) ? parsed.accounts : [parsed]); return accounts.map(account => toCpa(account, 'codex')); } if (['codex','axonhub','router9','cockpit'].includes(state.mode)) return toSub2Api(parsed); return { accessToken: first(parsed, ['token','accessToken','access_token']), email: first(parsed, ['account','email']), userId: first(parsed, ['id','user_id']) }; }
-    function convert(raw) { const parsed = parseInput(raw); if (state.mode === 'cpa' && Array.isArray(parsed) && $('normalizeCheck').checked) return clean({ exported_at: new Date().toISOString(), proxies: [], accounts: parsed.flatMap(item => toSub2Api(item).accounts) }); const out = Array.isArray(parsed) ? parsed.flatMap(item => { const converted = convertOne(item); return Array.isArray(converted) ? converted : [converted]; }) : convertOne(parsed); return clean(out); }
-    function renderResult(result) { const pretty = $('prettyCheck').checked; const text = pretty ? JSON.stringify(result, null, 2) : JSON.stringify(result); $('outputBox').textContent = text; $('lineCount').textContent = text.split('\n').length; $('byteCount').textContent = new Blob([text]).size; $('statusText').textContent = 'DONE'; state.result = text; addHistory(text); }
     const formatNames = { session: 'OpenAI / Grok OAuth', cpa: 'CPA', sub2api: 'Sub2API', codexmanager: 'Codex-Manager', codex: 'Codex CLI', codex2api: 'Codex2API', grok: 'Grok CLI', grok2api: 'Grok2API', axonhub: 'AxonHub', router9: '9router', cockpit: 'Cockpit' };
     const formatProviders = { cpa: ['openai','xai'], sub2api: ['openai','xai'], codexmanager: ['openai'], codex: ['openai'], codex2api: ['openai'], grok: ['xai'], grok2api: ['xai'], axonhub: ['openai','xai'], router9: ['openai','xai'], cockpit: ['openai','xai'] };
-    function providerForSource(source) { return ['grok','grok2api'].includes(source) ? 'xai' : 'openai'; }
-    function refreshTargetOptions(source, preferred) { const target = $('targetFormat'); const provider = providerForSource(source); const options = Object.entries(formatNames).filter(([key]) => key !== 'session' && key !== source && (!formatProviders[key] || formatProviders[key].includes(provider))); target.innerHTML = options.map(([key, label]) => `<option value="${key}">${label}</option>`).join(''); const next = options.some(([key]) => key === preferred) ? preferred : options[0][0]; target.value = next; return next; }
     function setRoute(source, target) { const nextTarget = refreshTargetOptions(source, target); state.source = source; state.target = nextTarget; state.mode = source === 'sub2api' ? 'sub2cpa' : source; $('sourceFormat').value = source; $('inputTitle').textContent = source === 'session' ? '粘贴 OpenAI / Grok OAuth JSON / JSONL' : '粘贴 ' + formatNames[source] + ' 内容'; $('inputMeta').textContent = source === 'session' ? 'INPUT / OAUTH JSON' : 'INPUT / ' + source.toUpperCase(); $('outputTitle').textContent = formatNames[nextTarget] + ' 配置'; $('inputText').value = ''; $('outputBox').innerHTML = '<div class="output-empty"><strong>等待转换</strong>结果会显示在这里</div>'; $('lineCount').textContent = '—'; $('byteCount').textContent = '—'; $('statusText').textContent = 'IDLE'; }
     function setMode(mode) { const presets = { session: ['session','cpa'], cpa: ['cpa','sub2api'], sub2cpa: ['sub2api','cpa'], codexmanager: ['codexmanager','cpa'], codex: ['codex','cpa'], codex2api: ['codex2api','cpa'], grok: ['grok','grok2api'], grok2api: ['grok2api','grok'], axonhub: ['axonhub','cpa'], router9: ['router9','cpa'], cockpit: ['cockpit','cpa'] }; const pair = presets[mode] || ['session','cpa']; document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode)); setRoute(pair[0], pair[1]); }
     function addHistory(text) { state.history.unshift({ source: state.source, target: state.target, bytes: new Blob([text]).size, time: new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) }); state.history = state.history.slice(0,4); $('historyList').innerHTML = state.history.map((h,i) => `<div class="history-row"><div class="history-main"><div class="file-icon">JS</div><div><div class="history-name">转换结果 ${String(state.history.length-i).padStart(2,'0')}.json</div><div class="history-detail">${h.bytes} bytes · 本地生成</div></div></div><div class="history-mode">${formatNames[h.source]} → ${formatNames[h.target]}</div><div class="history-time">今天 ${h.time}</div><div class="status">DONE</div></div>`).join(''); }
     function jwtPayload(token) { try { const part = String(token || '').split('.')[1]; if (!part) return {}; const padded = part.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(part.length/4)*4,'='); return JSON.parse(atob(padded)); } catch (_) { return {}; } }
     function parseInput(raw) { const text = raw.trim(); if (!text) throw new Error('请输入内容后再转换'); try { return JSON.parse(text); } catch (_) {} const jsonLines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean); if (jsonLines.length > 1) { const parsedLines = []; for (const line of jsonLines) { try { parsedLines.push(JSON.parse(line)); } catch (_) { break; } } if (parsedLines.length === jsonLines.length) return parsedLines; } if (text.includes('=') && !text.includes('{')) { const out = {}; text.split(/[\n,;]+/).forEach(pair => { const i = pair.indexOf('='); if (i > 0) out[pair.slice(0,i).trim()] = pair.slice(i+1).trim(); }); if (Object.keys(out).length) return out; } return { token: text }; }
-    function canonicalize(value, source) { let p = value || {}; if (source === 'sub2api') { const account = Array.isArray(p.accounts) ? (p.accounts[0] || {}) : p; const c = account.credentials || {}; const e = account.extra || {}; p = {...account, ...c, email: e.email || c.email || p.email, type: p.platform || 'codex'}; } if (source === 'grok' || source === 'grok2api') { const entries = p && typeof p === 'object' && !Array.isArray(p) ? Object.values(p) : []; if (entries.length && typeof entries[0] === 'object') p = {...entries[0], access_token: entries[0].access_token || entries[0].key, type: 'xai'}; } const access = first(p, ['access_token','accessToken','token','api_key','apiKey','key']); const claims = jwtPayload(access); const auth = claims['https://api.openai.com/auth'] || {}; const profile = claims['https://api.openai.com/profile'] || {}; const xai = source === 'grok' || source === 'grok2api' || first(p,['type','platform']) === 'xai' || first(p,['platform']) === 'grok' || String(first(p,['issuer','oidc_issuer','token_endpoint'])).includes('auth.x.ai'); return { provider: xai ? 'xai' : 'openai', access_token: access, refresh_token: first(p,['refresh_token','refreshToken']), id_token: first(p,['id_token','idToken']), session_token: first(p,['session_token','sessionToken']), user_id: first(p,['user_id','userId','sub']) || auth.chatgpt_user_id || claims.sub, account_id: first(p,['account_id','accountId','chatgpt_account_id','chatgptAccountId']) || auth.chatgpt_account_id, email: first(p,['email','account','account.email']) || profile.email || claims.email, name: first(p,['name','label']) || profile.name, plan_type: first(p,['plan_type','planType','chatgpt_plan_type']) || auth.chatgpt_plan_type, workspace_id: first(p,['workspace_id','workspaceId']), issuer: first(p,['issuer','oidc_issuer','iss']) || claims.iss, client_id: first(p,['client_id','clientId','oidc_client_id']), scopes: first(p,['scope','scopes']), base_url: first(p,['base_url','baseURL','endpoint','url'], xai ? 'https://api.x.ai/v1' : 'https://api.openai.com/v1'), token_endpoint: first(p,['token_endpoint','tokenEndpoint']), redirect_uri: first(p,['redirect_uri','redirectUri']), token_type: first(p,['token_type','tokenType']), expires_in: first(p,['expires_in','expiresIn']), principal_id: first(p,['principal_id','principalId']) || first(p,['user_id','userId','sub']) || claims.sub, principal_type: first(p,['principal_type','principalType'],'User'), expired: first(p,['expired','expires_at','expiresAt','expiry']) || (claims.exp ? new Date(Number(claims.exp)*1000).toISOString() : ''), last_refresh: first(p,['last_refresh','lastRefresh']) || (claims.iat ? new Date(Number(claims.iat)*1000).toISOString() : '') }; }
     function renderTarget(c, target) { const xai = c.provider === 'xai'; if (target === 'cpa') return clean(xai ? { type:'xai', access_token:c.access_token, refresh_token:c.refresh_token, id_token:c.id_token, token_type:c.token_type, expires_in:c.expires_in, expired:c.expired, last_refresh:c.last_refresh, email:c.email, sub:c.user_id || c.principal_id, base_url:c.base_url, token_endpoint:c.token_endpoint, redirect_uri:c.redirect_uri } : { type:'codex', email:c.email, account_id:c.account_id || '', plan_type:c.plan_type || '', id_token:c.id_token || '', access_token:c.access_token || '', refresh_token:c.refresh_token || '', session_token:c.session_token, expired:c.expired || '', last_refresh:c.last_refresh || new Date().toISOString(), disabled:false }); if (target === 'sub2api') return { type:'sub2api-data', version:1, exported_at:new Date().toISOString(), proxies:[], accounts:[{ name:c.name || c.email || c.account_id || c.user_id || 'authconv-account', platform:xai?'grok':'openai', type:'oauth', credentials:clean({access_token:c.access_token,refresh_token:c.refresh_token,session_token:xai?undefined:c.session_token,id_token:c.id_token,expires_at:c.expired,email:c.email,chatgpt_account_id:xai?undefined:c.account_id,chatgpt_user_id:xai?undefined:c.user_id,plan_type:xai?undefined:c.plan_type,user_id:xai?c.user_id:undefined,client_id:xai?c.client_id:undefined,base_url:xai?c.base_url:undefined}), extra:{import_source:'authconv'}, priority:50, concurrency:3, auto_pause_on_expired:true}] }; if (target === 'codexmanager') return clean({tokens:{access_token:c.access_token,refresh_token:c.refresh_token,id_token:c.id_token,account_id:c.account_id,chatgpt_account_id:c.account_id},meta:{label:c.name || c.email || c.account_id,issuer:c.issuer || 'https://auth.openai.com',workspace_id:c.workspace_id,chatgpt_account_id:c.account_id,tags:['authconv']}}); if (target === 'codex2api') return [clean({name:c.name || c.email || c.account_id,email:c.email,refresh_token:c.refresh_token,session_token:c.session_token,access_token:c.access_token,id_token:c.id_token,account_id:c.account_id,chatgpt_account_id:c.account_id,plan_type:c.plan_type,expires_at:c.expired})]; if (target === 'codex') return {auth_mode:'chatgpt',OPENAI_API_KEY:null,tokens:{id_token:c.id_token || '',access_token:c.access_token || '',refresh_token:c.refresh_token || '',account_id:c.account_id || ''},last_refresh:c.last_refresh || new Date().toISOString()}; if (target === 'grok' || target === 'grok2api') { const key = `${c.issuer || 'https://auth.x.ai'}::${c.user_id || c.principal_id || c.client_id || 'authconv-account'}`; return {[key]:clean({key:c.access_token,auth_mode:'oidc',create_time:c.last_refresh,user_id:c.user_id || c.principal_id,email:c.email,principal_type:c.principal_type || 'User',principal_id:c.principal_id || c.user_id,refresh_token:c.refresh_token,expires_at:c.expired,oidc_issuer:c.issuer || 'https://auth.x.ai',oidc_client_id:c.client_id || 'b1a00492-073a-47ea-816f-4c329264a828'})}; } if (target === 'axonhub') return clean({name:c.name || c.email || 'converted-account',email:c.email,access_token:c.access_token,refresh_token:c.refresh_token,base_url:c.base_url,model:'gpt-4o'}); if (target === 'router9') return clean({accessToken:c.access_token,refreshToken:c.refresh_token,expiresAt:c.expired,testStatus:'active',providerSpecificData:{chatgptAccountId:c.account_id,chatgptPlanType:c.plan_type},id:c.account_id || c.user_id,provider:xai?'grok':'codex',authType:'oauth',name:c.name || c.email,email:c.email,priority:9,isActive:true,createdAt:c.last_refresh,updatedAt:c.last_refresh}); if (target === 'cockpit') return clean({type:xai?'xai':'codex',email:c.email,name:c.name || c.email,account_id:c.account_id,plan_type:c.plan_type,id_token:c.id_token,access_token:c.access_token,refresh_token:c.refresh_token,session_token:c.session_token,last_refresh:c.last_refresh,expired:c.expired}); return clean(c); }
-    function convert(raw) { const parsed = parseInput(raw); if (!$('normalizeCheck').checked) return parsed; const values = Array.isArray(parsed) ? parsed : (state.source === 'sub2api' && Array.isArray(parsed.accounts) ? parsed.accounts : [parsed]); const rendered = values.flatMap(item => { const out = renderTarget(canonicalize(item, state.source), state.target); return Array.isArray(out) ? out : [out]; }); if (state.target === 'sub2api' && rendered.length > 1) return {...rendered[0], accounts: rendered.flatMap(item => item.accounts || [])}; if (state.target === 'codex2api') return rendered; if (rendered.length === 1) return rendered[0]; return rendered; }
     Object.assign(samples, { codexmanager:'{"tokens":{"access_token":"demo-access","refresh_token":"demo-refresh","id_token":"demo-id","account_id":"acct_demo"},"meta":{"label":"demo@example.com","issuer":"https://auth.openai.com","tags":["authconv"]}}', codex:'{"auth_mode":"chatgpt","OPENAI_API_KEY":null,"tokens":{"id_token":"demo-id","access_token":"demo-access","refresh_token":"demo-refresh","account_id":"acct_demo"},"last_refresh":"2026-07-19T00:00:00.000Z"}', codex2api:'[{"name":"demo@example.com","email":"demo@example.com","access_token":"demo-access","refresh_token":"demo-refresh","id_token":"demo-id","account_id":"acct_demo"}]', grok:'{"https://auth.x.ai::demo-user":{"key":"demo-xai-access","auth_mode":"oidc","user_id":"demo-user","email":"demo@example.com","principal_type":"User","principal_id":"demo-user","refresh_token":"demo-xai-refresh","oidc_issuer":"https://auth.x.ai","oidc_client_id":"b1a00492-073a-47ea-816f-4c329264a828"}}', grok2api:'{"https://auth.x.ai::demo-user":{"key":"demo-xai-access","auth_mode":"oidc","user_id":"demo-user","email":"demo@example.com","principal_type":"User","principal_id":"demo-user","refresh_token":"demo-xai-refresh","oidc_issuer":"https://auth.x.ai","oidc_client_id":"b1a00492-073a-47ea-816f-4c329264a828"}}' });
-    function showView(view) { $('convertView').hidden = false; $('oauthView').hidden = false; document.querySelector('.mode-tabs').hidden = false; (view === 'oauth' ? $('oauthView') : $('convertView')).scrollIntoView({behavior:'smooth', block:'start'}); }
-    setRoute('session', 'cpa');
-    $('targetFormat').addEventListener('change', e => setRoute($('sourceFormat').value, e.target.value));
     // Conversion and download handlers are attached by the phase-two pipeline below.
     $('sampleBtn').addEventListener('click', () => { $('inputText').value = samples[state.mode]; showToast('已载入示例数据'); });
     $('clearBtn').addEventListener('click', () => { $('inputText').value = ''; $('statusText').textContent = 'IDLE'; showToast('输入已清空'); });
     $('copyBtn').addEventListener('click', async () => { if (!state.result) return showToast('暂无可复制的结果'); await navigator.clipboard.writeText(state.result); showToast('已复制到剪贴板'); });
     $('clearHistoryBtn').addEventListener('click', () => { state.history = []; $('historyList').innerHTML = '<div class="history-row"><div class="history-main"><div class="file-icon">JS</div><div><div class="history-name">等待第一次转换</div><div class="history-detail">本地记录会出现在这里</div></div></div><div class="history-mode">—</div><div class="history-time">—</div><div class="status">READY</div></div>'; showToast('记录已清除'); });
     document.querySelectorAll('.mode-tab').forEach(t => t.addEventListener('click', () => setMode(t.dataset.mode)));
-    document.querySelectorAll('[data-nav]').forEach(n => n.addEventListener('click', () => { document.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active')); n.classList.add('active'); if (n.dataset.nav === 'history') $('historyList').scrollIntoView({behavior:'smooth'}); else if (n.dataset.nav === 'validate') showToast('校验功能已集成在转换流程中'); }));
+    document.querySelectorAll('[data-nav]').forEach(n => n.addEventListener('click', () => { document.querySelectorAll('[data-nav]').forEach(x => x.classList.remove('active')); n.classList.add('active'); const nav = n.dataset.nav; showView(nav === 'oauth' ? 'oauth' : 'convert'); if (nav === 'history') $('historyList').scrollIntoView({behavior:'smooth'}); else if (nav === 'validate') showToast('校验功能已集成在转换流程中'); }));
     $('themeBtn').addEventListener('click', () => { document.body.classList.toggle('dark'); showToast('显示模式已切换'); });
     function showView(view) { $('convertView').hidden = false; $('oauthView').hidden = false; document.querySelector('.mode-tabs').hidden = false; (view === 'oauth' ? $('oauthView') : $('convertView')).scrollIntoView({behavior:'smooth', block:'start'}); }
-    document.querySelectorAll('[data-nav]').forEach(n => n.addEventListener('click', () => { document.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active')); n.classList.add('active'); showView(n.dataset.nav === 'oauth' ? 'oauth' : 'convert'); }));
     const oauthConfig = { clientId: 'app_EMoamEEZ73f0CkXaXp7hrann', redirectUri: 'http://localhost:1455/auth/callback', scope: 'openid profile email offline_access', authorizationUrl: 'https://auth.openai.com/oauth/authorize' };
     const oauthState = { verifier: '', challenge: '', state: '', link: '', pollTimer: null };
     const oauthServer = location.protocol === 'file:' ? 'http://localhost:1455' : location.origin;
@@ -604,7 +595,6 @@
     $('oauthOpenBtn').addEventListener('click', () => { if (!oauthState.link) return showToast('请先生成 OAuth 登录链接'); const popup = window.open(oauthState.link, '_blank', 'noopener,noreferrer'); if (!popup) showToast('登录页被浏览器拦截，请复制链接打开'); else showToast('登录页已打开'); });
     $('oauthExchangeBtn').addEventListener('click', async () => { const code = extractOauthCode($('oauthCode').value); if (!code) return showToast('请先完成登录或粘贴回调 URL'); if (!oauthState.verifier) return showToast('请先生成本次 OAuth 登录链接'); $('oauthOutput').textContent = '正在兑换 token…'; try { const response = await fetch(`${oauthServer}/exchange`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ code, code_verifier: oauthState.verifier, redirect_uri: oauthConfig.redirectUri }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error_description || data.error || data.message || `HTTP ${response.status}`); const formatted = renderTarget(canonicalize(data, 'session'), state.target); const result = JSON.stringify(formatted, null, 2); $('oauthOutput').textContent = result; state.result = result; sessionStorage.removeItem('session-forge.oauth'); clearInterval(oauthState.pollTimer); showToast(data.refresh_token ? `已生成含 refresh_token 的 ${formatNames[state.target]} 配置` : '兑换成功，但结果不含 refresh_token'); } catch (error) { $('oauthOutput').textContent = JSON.stringify({ error: error.message, hint: '请通过 http://localhost:1455 打开工具并重试' }, null, 2); showToast('OAuth 兑换失败'); } });
     $('oauthCopyBtn').addEventListener('click', async () => { const value = $('oauthOutput').textContent.trim(); if (!value) return showToast('暂无可复制结果'); await navigator.clipboard.writeText(value); showToast('OAuth 结果已复制'); });
-    async function loadJsonFiles(fileList) { const files = Array.from(fileList || []); if (!files.length) return showToast('没有选择文件'); const records = []; const errors = []; for (const file of files) { try { const raw = await file.text(); let parsed; try { parsed = JSON.parse(raw); } catch (_) { const lines = raw.split(/\r?\n/).map(line => line.trim()).filter(Boolean); const jsonl = lines.map(line => JSON.parse(line)); parsed = jsonl.length === 1 ? jsonl[0] : jsonl; } if (Array.isArray(parsed)) records.push(...parsed); else if (state.source === 'sub2api' && Array.isArray(parsed.accounts)) records.push(...parsed.accounts); else records.push(parsed); } catch (_) { errors.push(file.name); } } if (records.length) $('inputText').value = JSON.stringify(records.length === 1 ? records[0] : records, null, 2); showToast(`已载入 ${records.length} 条记录${errors.length ? `，${errors.length} 个文件失败` : ''}`); }
     $('fileBtn').addEventListener('click', () => $('fileInput').click());
     $('folderBtn').addEventListener('click', () => $('folderInput').click());
     $('fileInput').addEventListener('change', e => loadJsonFiles(e.target.files));
@@ -1223,18 +1213,20 @@
         if (next) $('outputTitle').textContent = formatNames[next] + ' 配置';
       }, 180);
     });
-    const initialTargetV2 = refreshTargetOptions(state.source || 'session', state.target || 'cpa');
-    if (initialTargetV2) {
-      state.target = initialTargetV2;
-      $('outputTitle').textContent = formatNames[initialTargetV2] + ' 配置';
-    }
+    setRoute('session', 'cpa');
     function resetVerificationV2() {
       $('verificationBar').innerHTML = '<div class="verification-head"><div class="verification-summary"><strong>离线验签</strong><span class="verification-badge">等待转换</span><span>转换后显示账号身份与验签状态</span></div><div class="verification-source">JWKS SNAPSHOT<br>2026-07-17</div></div><div class="verification-accounts"><div class="verification-empty">转换后将在这里显示 Email / ID、平台 / 套餐和过期时间</div></div>';
     }
     resetVerificationV2();
-    $('targetFormat').addEventListener('change', () => {
+    $('targetFormat').addEventListener('change', e => {
+      state.target = e.target.value;
+      $('outputTitle').textContent = formatNames[state.target] + ' 配置';
       state.batchOutputs = [];
       state.batchAccounts = [];
+      $('outputBox').innerHTML = '<div class="output-empty"><strong>等待转换</strong>结果会显示在这里</div>';
+      $('lineCount').textContent = '—';
+      $('byteCount').textContent = '—';
+      $('statusText').textContent = 'IDLE';
       resetVerificationV2();
     });
     document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => {
