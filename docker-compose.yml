@@ -9,5 +9,5 @@ services:
       PORT: 1455
       NODE_ENV: production
     ports:
-      - "1455:1455"
+      - "127.0.0.1:1455:1455"
     restart: unless-stopped

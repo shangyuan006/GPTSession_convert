@@ -1,0 +1,16 @@
+{
+  "name": "gptsession-convert",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local credential conversion and OAuth helper",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check static/jwks.js && node --check static/app.js && node --check scripts/update-jwks.js",
+    "check:jwks": "node scripts/update-jwks.js --check",
+    "update:jwks": "node scripts/update-jwks.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
